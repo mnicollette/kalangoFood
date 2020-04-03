@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+
+
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUpdatePlan;
 use Illuminate\Http\Request;
 use App\Models\Plan;
-use Illuminate\Support\Str;
 
 class PlanController extends Controller
 {
@@ -30,12 +32,10 @@ class PlanController extends Controller
 
   }
 
-  public function store(Request $request){
+  public function store(StoreUpdatePlan $request){
 
-    $data = $request->all();
-    $data['price'] = str_replace(",",".",$request->price);
-    $data['url'] = Str::kebab($request->name);
-    $this->repository->create($data);
+
+    $this->repository->create($request->all());
       return redirect()->route('plans.index');
 
   }
@@ -74,6 +74,30 @@ class PlanController extends Controller
         'plans' => $plans,
         'filters' => $filters,
       ]);
+
+  }
+
+  public function edit($url){
+    $plan = $this->repository->where('url', $url)->first();
+
+    if(!$plan)
+      return redirect()->back();
+
+    return view('admin.pages.plans.edit', [
+      'plan' => $plan,
+    ]);
+
+  }
+
+  public function update(StoreUpdatePlan $request, $url){
+    $plan = $this->repository->where('url', $url)->first();
+
+    if(!$plan)
+      return redirect()->back();
+
+      $plan->update($request->all());
+
+    return redirect()->route('plans.index');
 
   }
 
